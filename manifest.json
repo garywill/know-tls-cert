@@ -2,7 +2,7 @@
     "name": "Know Server Better",
     "description": "Show info of server you are connecting to",
     "manifest_version": 2,
-    "version": "0.1",
+    "version": "0.1.1",
     "homepage_url": "https://github.com/garywill/know-server-better",
     "developer": {
         "name": "Garywill",
