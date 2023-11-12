@@ -1,9 +1,74 @@
-browser.webRequest.onHeadersReceived.addListener(showInfo,
-    {urls: ["<all_urls>"]},
-    ["blocking"]
-);
+// https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/webRequest
 
-async function showInfo(details) {
+// browser.webRequest.onBeforeRequest.addListener(onBeforeRequest,
+//     {urls: ["<all_urls>"]},
+//     ["blocking"]
+// );
+// async function onBeforeRequest(details) { onWebRequestEvent("onBeforeRequest",details); }
+// 
+// browser.webRequest.onBeforeSendHeaders.addListener(onBeforeSendHeaders,
+//     {urls: ["<all_urls>"]},
+//     ["blocking"]
+// );
+// async function onBeforeSendHeaders(details) { onWebRequestEvent("onBeforeSendHeaders",details); }
+// 
+// browser.webRequest.onSendHeaders.addListener(onSendHeaders,
+//     {urls: ["<all_urls>"]},
+//     //["blocking"]
+// );
+// async function onSendHeaders(details) { onWebRequestEvent("onSendHeaders",details); }
+
+browser.webRequest.onHeadersReceived.addListener(onHeadersReceived,
+    {
+        urls: ["<all_urls>"], 
+        types: ["main_frame"]
+    },
+    ["blocking"] // need blocking to get cert info
+);
+function onHeadersReceived(details) { onWebRequestEvent("onHeadersReceived",details); }
+
+// browser.webRequest.onAuthRequired.addListener(onAuthRequired,
+//     {urls: ["<all_urls>"]},
+//     ["blocking"]
+// );
+// async function onAuthRequired(details) { onWebRequestEvent("onAuthRequired",details); }
+// 
+// browser.webRequest.onResponseStarted.addListener(onResponseStarted,
+//     {urls: ["<all_urls>"]},
+//     //["blocking"]
+// );
+// async function onResponseStarted(details) { onWebRequestEvent("onResponseStarted",details); }
+// 
+// browser.webRequest.onBeforeRedirect.addListener(onBeforeRedirect,
+//     {urls: ["<all_urls>"]},
+//     //["blocking"]
+// );
+// async function onBeforeRedirect(details) { onWebRequestEvent("onBeforeRedirect",details); }
+// 
+// browser.webRequest.onCompleted.addListener(onCompleted,
+//     {urls: ["<all_urls>"]},
+//     //["blocking"]
+// );
+// async function onCompleted(details) { onWebRequestEvent("onCompleted",details); }
+// 
+// browser.webRequest.onErrorOccurred.addListener(onErrorOccurred,
+//     {urls: ["<all_urls>"]},
+// );
+// async function onErrorOccurred(details) { onWebRequestEvent("onErrorOccurred",details); }
+// 
+//  
+var desktop_notify = true;
+
+function json_pretty(json_obj){
+    return JSON.stringify(json_obj, null, 2);
+}
+function console_obj(json_obj){
+    console.log( json_pretty( json_obj ) );
+}
+
+async function onWebRequestEvent(ev,details) {
+    // console.log(ev);
+    // console_obj(details);
     if (details.type === "main_frame")
     {
         var secInfo = await browser.webRequest.getSecurityInfo(details.requestId, {"certificateChain": true } );
@@ -13,11 +78,11 @@ async function showInfo(details) {
         
         const root_ca = secInfo.certificates[secInfo.certificates.length-1];
         
-        var s2d = "";
-        if (!root_ca.isBuiltInRoot) s2d += "NOT BUILD-IN CA !\n";
-        s2d += `${secInfo.state} ${secInfo.protocolVersion}\n`;
+        var mainframe_notify_msg = "";
+        if (!root_ca.isBuiltInRoot) mainframe_notify_msg += "NOT BUILD-IN CA !\n";
+        mainframe_notify_msg += `${secInfo.state} ${secInfo.protocolVersion}\n`;
   
-        //console.log(s2d);
+        //console.log(mainframe_notify_msg);
       
      
         var infos2show = [];
@@ -35,19 +100,19 @@ async function showInfo(details) {
             
         }
         infos2show = removeNearRepeated(infos2show);
-        s2d += infos2show.join('\n');
-        //console.log(s2d );
+        mainframe_notify_msg += infos2show.join('\n');
+        //console.log(mainframe_notify_msg );
         
-        
-        browser.notifications.create({
-            "type": "basic",
-            //"iconUrl": 
-            "title": `${getUrlHost(details.url)} -- KSB`,
-            "message": s2d,
-        });
-    
+        if (desktop_notify)
+        {
+            browser.notifications.create({
+                "type": "basic",
+                "iconUrl": 'icon.png',  
+                "title": `${getUrlHost(details.url)}`,
+                "message": mainframe_notify_msg,
+            });
+        }
     }
-    
 }
 
 function parseCertStr(cert) // input should be a 'issuer' or 'subject' string
