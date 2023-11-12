@@ -1,12 +1,15 @@
 {
-    "name": "Know Server Better",
-    "description": "Show info of server you are connecting to",
+    "name": "Know TLS Cert",
+    "description": "Show TLS cert info",
     "manifest_version": 2,
-    "version": "0.1.1",
-    "homepage_url": "https://github.com/garywill/know-server-better",
+    "version": "0.2.0",
+    "homepage_url": "https://garywill.github.io",
     "developer": {
         "name": "Garywill",
-        "url": "https://github.com/garywill/know-server-better"
+        "url": "https://github.com/garywill/know-tls-cert"
+    },
+    "icons": {
+        "512": "icon.png"
     },
     "permissions": [
         "webRequest",
@@ -14,6 +17,7 @@
         "*://*/*",
         "notifications"
     ],
+
     "background": {
         "scripts": ["background.js"]
     }
